@@ -20,10 +20,13 @@ def ff(Re, rr, CBEQN=False):
     if CBEQN:
         # Implement the Colebrook equation as a lambda function with added safeguards
         def colebrook_eq(f, Re, rr):
+            # Ensure that f > 0 before passing to the equation
+            if f <= 0:
+                return np.inf  # Return a very large value if f is <= 0 (invalid)
             return 1 / np.sqrt(f) + 2.0 * np.log10((rr / 3.7) + (2.51 / (Re * np.sqrt(f))))  # Colebrook equation
 
-        # Solve using fsolve with a safe initial guess
-        result = fsolve(colebrook_eq, 0.02, args=(Re, rr))
+        # Solve using fsolve with a safe initial guess and constraints
+        result = fsolve(colebrook_eq, 0.02, args=(Re, rr), xtol=1e-6, maxfev=500)
 
         # Return the first solution (fsolve returns an array)
         return result[0] if result[0] > 0 else 0.02  # Ensure f > 0 for physical meaning
